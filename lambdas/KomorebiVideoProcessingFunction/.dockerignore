@@ -1,0 +1,5 @@
+Dockerfile
+.idea/
+target/
+template.yaml
+deploy.sh

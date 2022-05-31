@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  LambdaExecutionRole:
+    Description: Basic AWS Role for Lambda functions execution
+    Default: arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Type: String
+
+Resources:
+  KomorebiLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: komorebi-lambda-execution-role
+      Description: Role that permits Lambda access to S3 and DynamoDB
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  KomorebiLambdaExecutionRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: komorebi-lambda-execution-role-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: s3:*
+            Resource: arn:aws:s3:::*
+          - Effect: Allow
+            Action: dynamodb:*
+            Resource: arn:aws:dynamodb:::*
+      Roles:
+        - !Ref KomorebiLambdaExecutionRole
+
+  VideoProcessingFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: komorebi-video-processing
+      PackageType: Image
+      MemorySize: 500
+      Timeout: 300
+      EphemeralStorage:
+        Size: 2000
+      Role:
+        Fn::GetAtt:
+          - KomorebiLambdaExecutionRole
+          - Arn
+    Metadata:
+      DockerTag: komorebi-video-processing-v0
+      DockerContext: ./lambdas/KomorebiVideoProcessingFunction
+      Dockerfile: Dockerfile
