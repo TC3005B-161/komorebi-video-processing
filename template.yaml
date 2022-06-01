@@ -6,9 +6,25 @@ Parameters:
     Description: Basic AWS Role for Lambda functions execution
     Default: arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
     Type: String
+  KomorebiRecordingDynamoTableArn:
+    Description: ARN of the DynamoDB table used to store information of the recordings
+    Default: ""
+    Type: String
+
+Mappings:
+  Buckets:
+    AmazonConnectAudioRecording:
+      Arn: arn:aws:s3:::amazon-connect-s3-calls
+      Name: amazon-connect-s3-calls
+    KomorebiInputVideoRecording:
+      Arn: arn:aws:s3:::komorebi-intermediary-recordings
+      Name: komorebi-intermediary-recordings
+    KomorebiOutputVideoRecording:
+      Arn: arn:aws:s3:::komorebi-video-recordings
+      Name: komorebi-video-recordings
 
 Resources:
-  KomorebiLambdaExecutionRole:
+  VideoProcessingLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: komorebi-lambda-execution-role
@@ -23,9 +39,9 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref LambdaExecutionRole
 
-  KomorebiLambdaExecutionRolePolicy:
+  VideoProcessingLambdaExecutionRolePolicy:
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: komorebi-lambda-execution-role-policy
@@ -34,12 +50,16 @@ Resources:
         Statement:
           - Effect: Allow
             Action: s3:*
-            Resource: arn:aws:s3:::*
+            Resource:
+              - !FindInMap [Buckets, AmazonConnectAudioRecording, Arn]
+              - !FindInMap [Buckets, KomorebiInputVideoRecording, Arn]
+              - !FindInMap [Buckets, KomorebiOutputVideoRecording, Arn]
           - Effect: Allow
             Action: dynamodb:*
-            Resource: arn:aws:dynamodb:::*
+            Resource:
+              - !Ref KomorebiRecordingDynamoTableArn
       Roles:
-        - !Ref KomorebiLambdaExecutionRole
+        - !Ref VideoProcessingLambdaExecutionRole
 
   VideoProcessingFunction:
     Type: AWS::Lambda::Function
@@ -52,9 +72,39 @@ Resources:
         Size: 2000
       Role:
         Fn::GetAtt:
-          - KomorebiLambdaExecutionRole
+          - VideoProcessingLambdaExecutionRole
           - Arn
+      Environment:
+        Variables:
+          AC_AUDIO_BUCKET_NAME: !FindInMap [Buckets, AmazonConnectAudioRecording, Arn]
+          INPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiInputVideoRecording, Arn]
+          OUTPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiOutputVideoRecording, Arn]
     Metadata:
       DockerTag: komorebi-video-processing-v0
       DockerContext: ./lambdas/KomorebiVideoProcessingFunction
       Dockerfile: Dockerfile
+
+  VideoProcessingDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: komorebi-video-processing-dlq
+
+  VideoProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 5
+      QueueName: komorebi-video-processing-queue
+      ReceiveMessageWaitTimeSeconds: 5
+      VisibilityTimeout: 1800
+      RedrivePolicy:
+        deadLetterTargetArn: !Ref VideoProcessingDeadLetterQueue
+        maxReceiveCount: 3
+
+  VideoProcessingLambdaSQSEvent:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      FunctionName: !Ref VideoProcessingFunction
+      EventSourceArn: !Ref VideoProcessingQueue
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      BatchSize: 1

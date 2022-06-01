@@ -5,35 +5,58 @@ import java.util.UUID;
 
 public class VideoProcessor {
 
-    private final String audioPath;
-    private final String videoPath;
-
-    public VideoProcessor(String audioPath, String videoPath){
-        this.audioPath = audioPath;
-        this.videoPath = videoPath;
-    }
-
-    public String processVideo(LambdaLogger logger) throws Exception {
-        String muxedVideoPath = this.buildOutputPath("mp4");
-        String command = this.buildMuxCommand(muxedVideoPath);
-        Shell.execute(command, logger);
-        return muxedVideoPath;
-    }
-
-    private String buildMuxCommand(String outputPath){
+    public static void extractVideo(String inputPath, String videoPath, LambdaLogger logger) throws Exception {
         String command = String.format(
-            "ffmpeg -i %s -i %s -acodec copy -vcodec copy %s",
-            this.audioPath,
-            this.videoPath,
+            "ffmpeg -i %s -an -vcodec copy %s",
+            inputPath,
+            videoPath);
+        Shell.execute(command, logger);
+    }
+
+    public static void extractAudio(String inputPath, String audioPath, LambdaLogger logger) throws Exception{
+        String command = String.format(
+            "ffmpeg -i %s -vn -acodec copy %s",
+            inputPath,
+            audioPath);
+        Shell.execute(command, logger);
+    }
+
+    public static void splitAudio(String inputPath, String secondHalfPath, String tms, LambdaLogger logger) throws Exception{
+        String command = String.format(
+            "./ffmpeg -i %s -ss %s -q:a 0 -map a %s",
+            inputPath,
+            tms,
+            secondHalfPath);
+        Shell.execute(command, logger);
+    }
+
+    public static void concatAudios(String firstAudio, String secondAudio, String outputPath, LambdaLogger logger) throws Exception {
+        String command = String.format(
+            "echo -e 'file %s\nfile %s' > /tmp/input.txt && " +
+            "./ffmpeg -f concat -i /tmp/input.txt -c copy %s && " +
+            "rm /tmp/input.txt",
+            firstAudio,
+            secondAudio,
             outputPath
         );
-        return command;
+        Shell.execute(command, logger);
     }
 
-    private String buildOutputPath(String extension){
-        UUID uuid = UUID.randomUUID();
-        String uuidAsString = uuid.toString();
-        String outputPath = String.format("/tmp/%s.%s", uuidAsString, extension);
-        return outputPath;
+    public static void muxVideo(String videoPath, String audioPath, String outputPath, LambdaLogger logger) throws Exception {
+        String command = String.format(
+                "ffmpeg -i %s -i %s -acodec copy -vcodec copy %s",
+                audioPath,
+                videoPath,
+                outputPath);
+        Shell.execute(command, logger);
+    }
+
+    public static void extractThumbnail(String videoPath, String outputPath, LambdaLogger logger) throws Exception {
+        String command = String.format(
+            "ffmpeg -i %s -ss 00:00:01.000 -vframes 1 %s",
+            videoPath,
+            outputPath
+        );
+        Shell.execute(command, logger);
     }
 }

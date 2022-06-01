@@ -1,23 +1,20 @@
 package com.komorebi.video;
 
 public class ProcessVideoInput {
+    private String recordingID;
+    private String callEndingTimestamp;
 
-    private String audioS3URI;
-    private String videoS3URI;
-
-    public String getAudioS3URI() {
-        return audioS3URI;
+    public String getRecordingID() {
+        return recordingID;
+    }
+    public void setRecordingID(String recordingID) {
+        this.recordingID = recordingID;
     }
 
-    public void setAudioS3URI(String audioS3URI) {
-        this.audioS3URI = audioS3URI;
+    public String getCallEndingTimestamp() {
+        return callEndingTimestamp;
     }
-
-    public String getVideoS3URI() {
-        return videoS3URI;
-    }
-
-    public void setVideoS3URI(String videoS3URI) {
-        this.videoS3URI = videoS3URI;
+    public void setCallEndingTimestamp(String callEndingTimestamp) {
+        this.callEndingTimestamp = callEndingTimestamp;
     }
 }
