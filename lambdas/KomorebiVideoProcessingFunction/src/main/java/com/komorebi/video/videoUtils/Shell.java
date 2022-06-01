@@ -1,9 +1,10 @@
 package com.komorebi.video.videoUtils;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 class Shell {
 

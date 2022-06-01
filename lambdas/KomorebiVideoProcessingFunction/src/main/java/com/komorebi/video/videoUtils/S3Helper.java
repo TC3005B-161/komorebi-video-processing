@@ -1,15 +1,16 @@
 package com.komorebi.video.videoUtils;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.s3.model.*;import com.komorebi.video.FileManager;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 import java.io.File;
+
+import com.amazonaws.SdkClientException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.s3.model.*;
 
 
 public class S3Helper {
@@ -28,7 +29,7 @@ public class S3Helper {
         ListObjectsV2Result listResult = s3Client.listObjectsV2(listRequest);
         List<S3ObjectSummary> objectSummaries = listResult.getObjectSummaries();
         if (objectSummaries.size() != 1){
-            throw new Exception("Prefix is not unique or non existent");
+            throw new Exception("S3 prefix is not unique or non existent " + prefix);
         }
 
         return objectSummaries.get(0).getKey();

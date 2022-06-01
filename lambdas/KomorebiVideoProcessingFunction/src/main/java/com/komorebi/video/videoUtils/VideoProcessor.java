@@ -1,7 +1,6 @@
 package com.komorebi.video.videoUtils;
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import java.util.UUID;
 
 public class VideoProcessor {
 

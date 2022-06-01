@@ -1,9 +1,8 @@
 package com.komorebi.video.DBUtils;
 
+import java.util.Set;
 
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
-
-import java.util.Set;
 
 @DynamoDbBean
 public class Recording {

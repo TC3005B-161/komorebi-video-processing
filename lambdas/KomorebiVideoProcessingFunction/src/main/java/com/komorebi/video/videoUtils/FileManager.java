@@ -1,6 +1,10 @@
-package com.komorebi.video;
+package com.komorebi.video.videoUtils;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;import java.util.UUID;import java.util.regex.Matcher;import java.util.regex.Pattern;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 public class FileManager {
 
@@ -33,6 +37,7 @@ public class FileManager {
         } else{
             throw new Exception(String.format("Unable to parse regex %s from input %s", regex, inputStr));
         }
+        logger.log("Parsed the following group " + group + " from string " + inputStr + " with regex " + regex + "\n");
         return group;
     }
 
