@@ -5,7 +5,7 @@ if [ "$2" != "" ]; then
   echo "Using profile $PROFILE for deployment"
 fi
 
-ECR_REPOSITORY="${1}.dkr.ecr.us-east-1.amazonaws.com/lambda-deployment-images"
+ECR_REPOSITORY="${1}.dkr.ecr.us-west-2.amazonaws.com/lambda-deployment-images"
 STACK_NAME="komorebi-video-processing"
 
 sam build \
