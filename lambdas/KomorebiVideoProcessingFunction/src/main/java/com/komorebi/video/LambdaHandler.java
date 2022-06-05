@@ -10,7 +10,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 
-import com.komorebi.video.DBUtils.DynamoDBHelper;
+import com.komorebi.video.DBUtils.RecordingDynamoDBHelper;
 import com.komorebi.video.videoUtils.S3Helper;
 
 
@@ -18,19 +18,17 @@ public class LambdaHandler {
 
     private final S3Helper s3;
     private final Gson gson;
-    private LambdaLogger logger;
-    private DynamoDBHelper dynamo;
+    private final RecordingDynamoDBHelper dynamo;
 
 
     public LambdaHandler() throws Exception {
         s3 = new S3Helper();
         gson = new GsonBuilder().setPrettyPrinting().create();
-        dynamo = new DynamoDBHelper();
+        dynamo = new RecordingDynamoDBHelper();
     }
 
     public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) throws Exception {
         LambdaLogger logger = context.getLogger();
-        this.logger = logger;
         logger.log("RECEIVED EVENT: " +  gson.toJson(sqsEvent) + "\n");
 
         List<SQSBatchResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();

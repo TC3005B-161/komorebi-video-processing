@@ -1,11 +1,11 @@
 #!/bin/sh
 
-if [ "$1" != "" ]; then
-  PROFILE="--profile $1"
+if [ "$2" != "" ]; then
+  PROFILE="--profile $2"
   echo "Using profile $PROFILE for deployment"
 fi
 
-ECR_REPOSITORY="612928833356.dkr.ecr.us-west-2.amazonaws.com/lambda-deployment-images"
+ECR_REPOSITORY="${1}.dkr.ecr.us-east-1.amazonaws.com/lambda-deployment-images"
 STACK_NAME="komorebi-video-processing"
 
 sam build \

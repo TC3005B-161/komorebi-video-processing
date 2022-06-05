@@ -9,12 +9,13 @@ public class RecordingDTO {
 
     private final String videoID;
     private final String agentID;
-    private Calendar date;
+    private final Calendar date;
 
     public RecordingDTO(Recording recording) throws ParseException {
         this.videoID = recording.getVideoID();
         this.agentID = recording.getAgentID();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+        this.date = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         Date simpleDate = dateFormat.parse(recording.getDate());
         this.date.setTime(simpleDate);
     }

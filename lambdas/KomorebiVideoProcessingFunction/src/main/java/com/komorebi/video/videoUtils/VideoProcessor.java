@@ -58,4 +58,6 @@ public class VideoProcessor {
         );
         Shell.execute(command, logger);
     }
+
+    // TODO Cleanup files
 }

@@ -8,12 +8,12 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 
-public class DynamoDBHelper {
+public class RecordingDynamoDBHelper {
 
     private final DynamoDbEnhancedClient enhancedClient;
     private final DynamoDbTable<Recording> recordingTable;
 
-    public DynamoDBHelper() throws Exception{
+    public RecordingDynamoDBHelper() throws Exception{
         try{
             DynamoDbClient dbc = DynamoDbClient.create();
             this.enhancedClient = DynamoDbEnhancedClient.builder()

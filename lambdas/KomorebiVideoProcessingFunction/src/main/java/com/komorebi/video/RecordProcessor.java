@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
-import com.komorebi.video.DBUtils.DynamoDBHelper;
+import com.komorebi.video.DBUtils.RecordingDynamoDBHelper;
 import com.komorebi.video.DBUtils.Recording;
 import com.komorebi.video.DBUtils.RecordingDTO;
 import com.komorebi.video.videoUtils.FileManager;
@@ -16,12 +16,12 @@ public class RecordProcessor {
 
     private final ProcessVideoInput processData;
     private final Recording recordingItem;
-    private final DynamoDBHelper dynamo;
+    private final RecordingDynamoDBHelper dynamo;
     private final RecordingDTO recordingDTO;
     private final S3Helper s3;
     private final LambdaLogger logger;
 
-    public RecordProcessor(ProcessVideoInput processData, S3Helper s3, DynamoDBHelper dynamo, LambdaLogger logger) throws Exception{
+    public RecordProcessor(ProcessVideoInput processData, S3Helper s3, RecordingDynamoDBHelper dynamo, LambdaLogger logger) throws Exception{
         this.processData = processData;
         this.dynamo = dynamo;
         this.logger = logger;

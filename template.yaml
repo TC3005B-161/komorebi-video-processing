@@ -14,14 +14,14 @@ Parameters:
 Mappings:
   Buckets:
     AmazonConnectAudioRecording:
-      Arn: arn:aws:s3:::amazon-connect-s3-calls
-      Name: amazon-connect-s3-calls
+      Arn: "arn:aws:s3:::amazon-connect-s3-calls"
+      Name: "amazon-connect-s3-calls"
     KomorebiInputVideoRecording:
-      Arn: arn:aws:s3:::komorebi-intermediary-recordings
-      Name: komorebi-intermediary-recordings
+      Arn: "arn:aws:s3:::komorebi-intermediary-recordings"
+      Name: "komorebi-intermediary-recordings"
     KomorebiOutputVideoRecording:
-      Arn: arn:aws:s3:::komorebi-video-recordings
-      Name: komorebi-video-recordings
+      Arn: "arn:aws:s3:::komorebi-video-recordings"
+      Name: "komorebi-video-recordings"
 
 Resources:
   VideoProcessingLambdaExecutionRole:
