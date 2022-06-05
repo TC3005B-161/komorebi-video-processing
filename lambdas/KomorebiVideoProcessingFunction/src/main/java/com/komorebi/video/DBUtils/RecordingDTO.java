@@ -66,4 +66,16 @@ public class RecordingDTO {
         );
         return path;
     }
+
+    public String getVideoID() {
+        return videoID;
+    }
+
+    public String getAgentID() {
+        return agentID;
+    }
+
+    public Calendar getDate() {
+        return date;
+    }
 }

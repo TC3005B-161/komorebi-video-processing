@@ -4,7 +4,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.regions.Region;import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 
@@ -15,7 +15,7 @@ public class RecordingDynamoDBHelper {
 
     public RecordingDynamoDBHelper() throws Exception{
         try{
-            DynamoDbClient dbc = DynamoDbClient.create();
+            DynamoDbClient dbc = DynamoDbClient.builder().region(Region.US_EAST_2).build();
             this.enhancedClient = DynamoDbEnhancedClient.builder()
                     .dynamoDbClient(dbc)
                     .build();

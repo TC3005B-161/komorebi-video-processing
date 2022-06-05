@@ -29,6 +29,7 @@ public class RecordProcessor {
 
         this.recordingItem = dynamo.getRecording(processData.getRecordingID());
         this.recordingDTO = new RecordingDTO(recordingItem);
+        logger.log("Found recording with agent ID " + recordingDTO.getAgentID() + "\n");
     }
 
     public void process() throws Exception{
@@ -43,6 +44,7 @@ public class RecordProcessor {
         this.getThumbnailImage(muxedVideo);
 
         dynamo.setRecordingAsProcessed(recordingItem);
+        logger.log("Finished processing recording with ID " + recordingDTO.getVideoID() + "\n");
     }
 
     private FileManager getAmazonConnectAudio() throws Exception{
@@ -67,12 +69,15 @@ public class RecordProcessor {
                         logger);
 
         s3.downloadS3ObjectAsFile(komorebiInput);
+        logger.log("Downloaded komorebi recording file " + komorebiInput.getS3Path() + "\n");
 
         String komorebiAudioFull = FileManager.buildOutputPath("wav");
         VideoProcessor.extractAudio(komorebiInput.getLocalFilePath(), komorebiAudioFull, logger);
+        logger.log("Extract audio from file to " + komorebiAudioFull + "\n");
 
         String komorebiVideoFull = FileManager.buildOutputPath("mp4");
         VideoProcessor.extractVideo(komorebiInput.getLocalFilePath(), komorebiVideoFull, logger);
+        logger.log("Extract video from file to " + komorebiVideoFull + "\n");
 
         String komorebiAudioACW = FileManager.buildOutputPath("wav");
         VideoProcessor.splitAudio(
@@ -80,6 +85,7 @@ public class RecordProcessor {
                 komorebiAudioACW,
                 processData.getCallEndingTimestamp(),
                 logger);
+        logger.log("Cut audio file to get ACW audio to " + komorebiAudioACW + "\n");
 
         List<String> files = new ArrayList<>();
         files.add(komorebiAudioACW);
@@ -91,13 +97,17 @@ public class RecordProcessor {
     private FileManager getMuxedVideo(FileManager amazonAudioInput, String komorebiAudioACW, String komorebiVideoFull) throws Exception{
         String mergedAudios = FileManager.buildOutputPath("wav");
         VideoProcessor.concatAudios(amazonAudioInput.getLocalFilePath(), komorebiAudioACW, mergedAudios, logger);
+        logger.log("Merged audio files to " + mergedAudios + "\n");
 
         FileManager muxedVideo = new FileManager(
                 EnvironmentVariables.getInstance().VIDEO_OUTPUT_BUCKET,
                 recordingDTO.buildKomorebiOutputVideoPath(),
                 logger);
         VideoProcessor.muxVideo(komorebiVideoFull, mergedAudios, muxedVideo.getLocalFilePath(), logger);
+        logger.log("Muxed audio and video files to " + muxedVideo.getLocalFilePath() + "\n");
+
         s3.uploadLocalFileToS3(muxedVideo, logger);
+        logger.log("Uploaded file to " + muxedVideo.getS3Path() + "\n");
 
         return muxedVideo;
     }
@@ -107,9 +117,12 @@ public class RecordProcessor {
                 EnvironmentVariables.getInstance().VIDEO_OUTPUT_BUCKET,
                 recordingDTO.buildKomorebiOutputThumbnailPath(),
                 logger);
-
         VideoProcessor.extractThumbnail(muxedVideo.getLocalFilePath(), thumbnail.getLocalFilePath(), logger);
+        logger.log("Extracted thumbnail from video to " + thumbnail.getLocalFilePath() + "\n");
+
         s3.uploadLocalFileToS3(thumbnail, logger);
+        logger.log("Uploaded file to " + thumbnail.getS3Path() + "\n");
+
         return thumbnail;
     }
 
