@@ -1,7 +1,7 @@
 package com.komorebi.video;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;import java.util.List;
 
 import com.amazonaws.lambda.thirdparty.com.google.gson.Gson;
 import com.amazonaws.lambda.thirdparty.com.google.gson.GsonBuilder;
@@ -45,6 +45,8 @@ public class LambdaHandler {
 
             } catch (Exception e){
                 logger.log("FAILED PROCESSING FOR MESSAGE ID: " +  messageId + "\n");
+                logger.log("Exception: " + e.getMessage() + "\n");
+                logger.log(Arrays.toString(e.getStackTrace()));
                 batchItemFailures.add(new SQSBatchResponse.BatchItemFailure(message.getMessageId()));
             }
         }
