@@ -51,9 +51,7 @@ Resources:
           - Effect: Allow
             Action: s3:*
             Resource:
-              - !FindInMap [Buckets, AmazonConnectAudioRecording, Arn]
-              - !FindInMap [Buckets, KomorebiInputVideoRecording, Arn]
-              - !FindInMap [Buckets, KomorebiOutputVideoRecording, Arn]
+              - arn:aws:s3:::*
           - Effect: Allow
             Action: dynamodb:*
             Resource:
