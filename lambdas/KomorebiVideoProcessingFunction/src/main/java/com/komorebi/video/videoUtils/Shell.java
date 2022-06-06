@@ -3,25 +3,28 @@ package com.komorebi.video.videoUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;import java.util.List;
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 class Shell {
 
-    public static void execute(String command, LambdaLogger logger) throws Exception{
-        logger.log("About to execute the following command: " + command);
-
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("bash", "-c", command);
+    public static void execute(List<String> command, LambdaLogger logger) throws Exception{
+        logger.log("About to execute the following command: " + command + "\n");
 
         try {
+            ProcessBuilder processBuilder = new ProcessBuilder()
+                .redirectErrorStream(true)
+                .command(command);
 
             Process process = processBuilder.start();
             StringBuilder output = new StringBuilder();
 
             BufferedReader outputReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream())
+                    new InputStreamReader(process.getInputStream(), Charset.defaultCharset())
             );
+
+            int exitCode = process.waitFor();
 
             String line = outputReader.readLine();
             while (line != null){
@@ -29,16 +32,15 @@ class Shell {
                 line = outputReader.readLine();
             }
 
-            int exitCode = process.waitFor();
             logger.log(output.append("\n").toString());
             if (exitCode != 0){
                 throw new Exception("Error while processing the video and the audio");
             }
 
         } catch(IOException | InterruptedException exc){
-            throw new Exception("Unable to process the video and audio");
+            logger.log("Error while executing shell command: " + exc.getMessage() + "\n");
+            throw new Exception("Unable to process the video and audio", exc);
         }
-
-        logger.log("Successful execution of shell command");
+        logger.log("Successful execution of shell command\n");
     }
 }

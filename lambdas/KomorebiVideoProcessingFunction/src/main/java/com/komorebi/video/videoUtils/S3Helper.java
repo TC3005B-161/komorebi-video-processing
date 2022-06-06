@@ -35,6 +35,7 @@ public class S3Helper {
     * @throws NotFoundException - If there is not a file with the given prefix, or if it is duplicated.
     */
     public String getKeyFromUniquePrefix(String S3Bucket, String prefix, LambdaLogger logger) throws NotFoundException{
+        logger.log("S3 LIST OBJECTS. BUCKET: " + S3Bucket + " PREFIX: " + prefix + "\n");
         ListObjectsV2Request listRequest = new ListObjectsV2Request().
             withBucketName(S3Bucket).
             withPrefix(prefix);
@@ -42,7 +43,7 @@ public class S3Helper {
         ListObjectsV2Result listResult = s3Client.listObjectsV2(listRequest);
         List<S3ObjectSummary> objectSummaries = listResult.getObjectSummaries();
         if (objectSummaries.size() != 1){
-            logger.log(String.format("Found %d objects with the given prefix: %s", objectSummaries.size(), prefix));
+            logger.log(String.format("FOUND %d OBJECTS", objectSummaries.size()));
             throw new NotFoundException("S3 prefix is not unique or non existent " + prefix);
         }
 

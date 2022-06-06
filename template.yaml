@@ -76,9 +76,9 @@ Resources:
           - Arn
       Environment:
         Variables:
-          AC_AUDIO_BUCKET_NAME: !FindInMap [Buckets, AmazonConnectAudioRecording, Arn]
-          INPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiInputVideoRecording, Arn]
-          OUTPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiOutputVideoRecording, Arn]
+          AC_AUDIO_BUCKET_NAME: !FindInMap [Buckets, AmazonConnectAudioRecording, Name]
+          INPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiInputVideoRecording, Name]
+          OUTPUT_BUCKET_NAME: !FindInMap [Buckets, KomorebiOutputVideoRecording, Name]
     Metadata:
       DockerTag: komorebi-video-processing-v0
       DockerContext: ./lambdas/KomorebiVideoProcessingFunction
