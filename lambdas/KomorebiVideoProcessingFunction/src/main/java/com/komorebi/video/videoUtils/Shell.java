@@ -32,8 +32,8 @@ class Shell {
                 line = outputReader.readLine();
             }
 
-            logger.log(output.append("\n").toString());
             if (exitCode != 0){
+                logger.log(output.append("\n").toString());
                 throw new Exception("Error while processing the video and the audio");
             }
 

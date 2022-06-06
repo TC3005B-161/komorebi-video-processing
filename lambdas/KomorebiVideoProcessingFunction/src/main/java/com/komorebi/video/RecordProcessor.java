@@ -41,9 +41,16 @@ public class RecordProcessor {
 
         FileManager muxedVideo = this.getMuxedVideo(amazonConnectAudio, komorebiAudioACW, komorebiVideoFull);
 
-        this.getThumbnailImage(muxedVideo);
+        FileManager thumbnail = this.getThumbnailImage(muxedVideo);
 
         dynamo.setRecordingAsProcessed(recordingItem);
+        VideoProcessor.cleanupFiles(
+                amazonConnectAudio.getLocalFilePath(),
+                komorebiAudioACW,
+                komorebiVideoFull,
+                muxedVideo.getLocalFilePath(),
+                thumbnail.getLocalFilePath());
+
         logger.log("Finished processing recording with ID " + recordingDTO.getVideoID() + "\n");
     }
 
@@ -86,6 +93,8 @@ public class RecordProcessor {
                 processData.getCallEndingTimestamp(),
                 logger);
         logger.log("Cut audio file to get ACW audio to " + komorebiAudioACW + "\n");
+
+        VideoProcessor.cleanupFiles(komorebiAudioFull);
 
         List<String> files = new ArrayList<>();
         files.add(komorebiAudioACW);

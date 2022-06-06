@@ -103,5 +103,10 @@ public class VideoProcessor {
         Shell.execute(command, logger);
     }
 
-    // TODO Cleanup files
+    public static void cleanupFiles(String... files){
+        for (String filePath: files){
+            File file = new File(filePath);
+            file.delete();
+        }
+    }
 }
