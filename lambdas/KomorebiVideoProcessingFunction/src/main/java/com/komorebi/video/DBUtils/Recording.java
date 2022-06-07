@@ -53,7 +53,7 @@ public class Recording {
         this.lastName = lastName;
     }
 
-    @DynamoDbAttribute("date")
+    @DynamoDbAttribute("creationDate")
     public String getDate() {
         return date;
     }
