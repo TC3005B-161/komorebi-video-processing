@@ -2,7 +2,26 @@
 
 ## Procesamiento de Video (Lambda)
 
-Esta Lambda es parte de la arquitectura backend de Komorebi Connect. El repositorio de los servicios Web accesibles por medio de API se encuentra en el siguiente repositorio: https://github.com/TC3005B-161/komorebi-backend
+Esta Lambda es parte de la arquitectura backend de Komorebi Connect. El repositorio de los servicios Web accesibles por medio de API se encuentra en el siguiente repositorio: https://github.com/TC3005B-161/komorebi-backend. 
+
+El objetivo de la Lambda es procesar distintos archivos para la generación de una grabación unificada de una llamada de Amazon Connect. Los archivos de input son: 
+- Archivo de audio grabado por Amazon Connect 
+- Archivo de video y audio grabado por Komorebi Connect. Contiene no solo el audio de la llamada, sino también el que viene después hasta que se finaliza el contacto después de realizar el After Call Work. 
+- Cadena de texto indicando el momento en que termina la llamada de Amazon Connect. 
+
+La Lambda se desplegó usando una imágen. El contenedor Docker tiene instalado FFMPEG, una herramienta de procesamiento de grabaciones. Por medio de código Java se ejecutan comandos Shell que se encargan del procesamiento de los archivos. Exactamente, se realiza lo siguiente: 
+
+1. Hacer una query a la base de datos para obtener la información de la grabación
+2. Descargar el audio de Amazon Connect 
+3. Descargar la grabación de Komorebi Connect 
+4. Separar el video y el audio de la grabación de Komorebi Connect. 
+5. Extraer el audio post-llamada del audio completo proveniente de la grabación de Komorebi Connect. 
+6. Unir el audio de Amazon Connect con el audio post-llamada de Komorebi Connect. 
+7. Unir el audio completo generado con el video de la grabación de Komorebi Connect 
+8. Subir el archivo generado a un bucket de S3 
+9. Actualizar la grabación en la DB para indicar que el video ha sido procesado
+
+Se utilizó el servicio de SQS para la invocación de la Lambda, ya que permite hacer cierto número de reintentos asíncronos si el procesamiento inicial falla por algún motivo. Además, es posible procesar varias grabaciones en batches en caso de que haya un gran uso concurrente. 
 
 ### Código y Librerías 
 
