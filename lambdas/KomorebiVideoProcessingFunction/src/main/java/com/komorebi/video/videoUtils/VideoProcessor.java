@@ -3,7 +3,7 @@ package com.komorebi.video.videoUtils;
 import java.io.File;import java.io.FileWriter;import java.util.ArrayList;
 import java.util.List;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;import com.komorebi.video.EnvironmentVariables;
 
 public class VideoProcessor {
 
@@ -30,7 +30,7 @@ public class VideoProcessor {
         command.add("-acodec");
         command.add("pcm_s16le");
         command.add("-ar");
-        command.add("44100");
+        command.add(EnvironmentVariables.getInstance().AUDIO_FREQUENCY);
         command.add(audioPath);
         Shell.execute(command, logger);
     }
