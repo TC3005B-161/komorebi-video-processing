@@ -7,7 +7,7 @@ public class EnvironmentVariables {
     public final String AC_AUDIO_BUCKET;
     public final String VIDEO_INPUT_BUCKET;
     public final String VIDEO_OUTPUT_BUCKET;
-    public final String AUDIO_FREQUENCY;
+    public String AUDIO_FREQUENCY;
 
     public EnvironmentVariables(){
         AC_AUDIO_BUCKET = System.getenv("AC_AUDIO_BUCKET_NAME");
@@ -20,6 +20,7 @@ public class EnvironmentVariables {
         if (instance == null){
             instance = new EnvironmentVariables();
         }
+        instance.AUDIO_FREQUENCY = System.getenv("AUDIO_FREQUENCY");
         return instance;
     }
 }
