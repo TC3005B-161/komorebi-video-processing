@@ -30,7 +30,7 @@ public class VideoProcessor {
         command.add("-acodec");
         command.add("pcm_s16le");
         command.add("-ar");
-        command.add("8000");
+        command.add("44100");
         command.add(audioPath);
         Shell.execute(command, logger);
     }
