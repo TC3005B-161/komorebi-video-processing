@@ -1,72 +1,72 @@
 # komorebi-video-processing
 
-## Procesamiento de Video (Lambda)
+## Video Processing (Lambda)
 
-Esta Lambda es parte de la arquitectura backend de Komorebi Connect. El repositorio de los servicios Web accesibles por medio de API se encuentra en el siguiente repositorio: https://github.com/TC3005B-161/komorebi-backend. 
+This Lambda is part of the Komorebi Connect backend architecture. The repository containing the corresponding web services accessible via API is found in the following repository: https://github.com/TC3005B-161/komorebi-backend. 
 
-El objetivo de la Lambda es procesar distintos archivos para la generación de una grabación unificada de una llamada de Amazon Connect. Los archivos de input son: 
-- Archivo de audio grabado por Amazon Connect 
-- Archivo de video y audio grabado por Komorebi Connect. Contiene no solo el audio de la llamada, sino también el que viene después hasta que se finaliza el contacto después de realizar el After Call Work. 
-- Cadena de texto indicando el momento en que termina la llamada de Amazon Connect. 
+The purpose of the Lambda is to process different files for the creation of a unified recording of an Amazon Connect call. The input files are:
+- Audio file recorded by Amazon Connect
+- Video and audio file recorded by Komorebi Connect. It contains not only the audio of the call, but also the one that comes after until the contact is ended after performing the After Call Work.
+- Text string indicating the time the Amazon Connect call ends.
 
-La Lambda se desplegó usando una imágen. El contenedor Docker tiene instalado FFMPEG, una herramienta de procesamiento de grabaciones. Por medio de código Java se ejecutan comandos Shell que se encargan del procesamiento de los archivos. Exactamente, se realiza lo siguiente: 
+The Lambda was displayed using an image. The Docker container has FFMPEG, a recording processing tool, installed. By using Java code, Shell commands that are executed  are responsible for processing the files. The steps are shown below:
 
-1. Hacer una query a la base de datos para obtener la información de la grabación
-2. Descargar el audio de Amazon Connect 
-3. Descargar la grabación de Komorebi Connect 
-4. Separar el video y el audio de la grabación de Komorebi Connect. 
-5. Extraer el audio post-llamada del audio completo proveniente de la grabación de Komorebi Connect. 
-6. Unir el audio de Amazon Connect con el audio post-llamada de Komorebi Connect. 
-7. Unir el audio completo generado con el video de la grabación de Komorebi Connect 
-8. Subir el archivo generado a un bucket de S3 
-9. Actualizar la grabación en la DB para indicar que el video ha sido procesado
+1. Make a query to the database to obtain the recording information
+2. Download the audio from Amazon Connect
+3. Download Komorebi Connect Recording
+4. Separate the video and audio from the Komorebi Connect recording.
+5. Extract the post-call audio from the full audio from the Komorebi Connect recording.
+6. Merge Amazon Connect audio with Komorebi Connect post-call audio.
+7. Merge the generated full audio with the video from the Komorebi Connect recording
+8. Upload the generated file to an S3 bucket
+9. Update the recording in the DB to indicate that the video has been processed
 
-Se utilizó el servicio de SQS para la invocación de la Lambda, ya que permite hacer cierto número de reintentos asíncronos si el procesamiento inicial falla por algún motivo. Además, es posible procesar varias grabaciones en batches en caso de que haya un gran uso concurrente. 
+The SQS service was used for the Lambda invocation, since it allows a certain number of asynchronous retries to be made if the initial processing fails for any reason. Also, it is possible to process multiple recordings in batches in case of high concurrent usage in the system.
 
-### Código y Librerías 
+### Code and libraries 
 
-Para el código del servicio de procesamiento de video se utilizó el modelo de programación Lambda de AWS. Esto significa que tenemos una función en una clase de Java que se encarga de recibir los eventos, procesarlos, y regresar una respuesta. Se integró con el servicio de SQS para tener la posibilidad de reintentar el procesamiento de una grabación en caso de que haya un error. Y además la integración de una Dead Letter Queue permite almacenar la información de los videos que no se pudieron procesar después de varios intentos. 
+Regarding the code of the video processing service, the AWS Lambda programming model was used. Meaning we have a function in a Java class that is responsible for receiving the events, processing them, and returning a response. It has been integrated with the SQS service to have the possibility to retry the processing of a recording in case of an error. And also the integration of a Dead Letter Queue, allows you to store the information of the videos that could not be processed after several attempts.
 
-A nivel código, se deben incluir varias dependencias para interactuar con los distintos servicios. Se utilizó Maven para llevar el control de esto. A continuación se enlistan las librerías utilizadas: 
-- aws-lambda-java-runtime-interface-client V1.0.0: Esta librería implementa el modelo de programación lambda de AWS. 
-- aws-java-sdk-s3 V1.12.227: Permite el acceso al servicio de S3 por medio de un SDK. 
-- jackson-mapper-asl V1.9.13: Utilería para trabajar con JSON 
-- dynamodb-enhanced V2.17.154: Librería para interactuar con tablas en DynamoDB por medio de un SDK. 
-- aws-lambda-java-events V3.11.0: Librería para recibir eventos a la Lambda desde otros servicios de AWS y parsearlos a un objeto de Java de manera sencilla. En este caso, para recibir eventos de SQS. 
+At the code level, several dependencies must be included to interact with the different services. Maven was used to keep track of this. The libraries used are listed below:
+- aws-lambda-java-runtime-interface-client V1.0.0: This library implements the AWS lambda programming model.
+- aws-java-sdk-s3 V1.12.227: Allows access to the S3 service through an SDK.
+- jackson-mapper-asl V1.9.13: Utility to work with JSON
+- dynamodb-enhanced V2.17.154: Library to interact with tables in DynamoDB through an SDK.
+- aws-lambda-java-events V3.11.0: Library to receive Lambda events from other AWS services and easily parse them to a Java object. In this case, to receive events from SQS.
 
-### Configuración de autenticación AWS 
+### AWS Authentication Configuration 
 
-Para el funcionamiento de la Lambda no es necesario configurar credenciales a nivel código. Esto es posible gracias a que la función puede asumir un rol que tiene los permisos suficientes para interactuar con los servicios. El rol fue creado en un template de Cloudformation junto con el resto de la arquitectura. 
+For the Lambda to work, it is not necessary to configure credentials at the code level. This is possible because the role can assume a role that has sufficient permissions to interact with the services. The role was created in a Cloudformation template along with the rest of the architecture. 
 
-### Infraestructura de AWS
+### AWS Infrastructure
 
-La especificación de la infraestructura de AWS se realizó por medio de un template de Cloudformation, y el despliegue se realizó utilizando SAM (Serverless Application Model). Los recursos creados fueron: 
-- IAM Role para la ejecución de la Lambda
-- IAM Policy para especificar las acciones permitidas al Role de la Lambda 
-- Lambda Function deployada como imágen, con un Ephemeral Storage de 2GB para poder procesar videos de larga duración
-- SQS Queue para recibir los mensajes desde nuestro controlador y enviarlos a la Lambda
-- SQS Dead Letter Queue para almacenar los mensajes que se reintentaron cierto número de veces sin éxito. 
-- Lambda Event Source Mapping para configurar que la Lambda recibe un evento desde la queue de SQS. 
+The specification of the AWS infrastructure was carried out through a Cloudformation template, and the deployment was carried out using SAM (Serverless Application Model). The resources created were:
+- IAM Role for Lambda execution
+- IAM Policy to specify the actions allowed to the Lambda Role
+- Lambda Function deployed as an image, with a 2GB Ephemeral Storage to be able to process long videos
+- SQS Queue to receive the messages from our controller and send them to the Lambda
+- SQS Dead Letter Queue to store messages that have been retried a certain number of times without success.
+- Lambda Event Source Mapping to configure that the Lambda receives an event from the SQS queue.
 
-Adicionalmente, se crearon dos buckets de AWS y se recuperó el ARN para colocarlo como parámetro en el template de Cloudformation. 
+Additionally, two AWS buckets were created and the ARN was retrieved to place it as a parameter in the Cloudformation template.
 
-A continuación se muestra un pequeño extracto del template de Cloudformation: 
+Below is a small excerpt from the Cloudformation template: 
 
 <img width="1159" alt="Screen Shot 2022-06-10 at 19 37 57" src="https://user-images.githubusercontent.com/45611081/173166198-b558688b-94a8-4065-90d5-6da8661d6442.png">
 
 
-### Configuración CI/CD 
+### CI/CD Configuration 
 
-Para el despliegue de la aplicación se configuró un servidor Jenkins en una instancia de EC2 de tipo t2.small. Aquí se creó una pipeline que clona el repositorio de Github, ejecuta el comando SAM build, seguido de SAM package y SAM deploy. A continuación se muestra el Jenkinsfile:
+For the deployment of the application, a Jenkins server was configured in an EC2 instance of type t2.small. Here's a pipeline that clones the Github repository, runs the SAM build command, followed by SAM package and SAM deploy. Below is the Jenkinsfile:
 
 <img width="972" alt="Screen Shot 2022-06-10 at 19 38 59" src="https://user-images.githubusercontent.com/45611081/173166211-e593c086-7f82-446c-b2a1-ed6b88a26f69.png">
 
 
-Para lograr esto, la instancia de EC2 en la que se levantó el servidor Jenkins debe tener las siguientes configuraciones: 
-- Instalación de Docker 
-- Instalación de AWS CLI 
-- Configuración de las credenciales de AWS (por medio de aws configure)
-- Instalación de SAM (Serverless Application Model) V1.15.0
+To achieve this, the EC2 instance on which the Jenkins server was brought up must have the following configurations:
+-Docker installation
+- Installation of AWS CLI
+- Configuration of AWS credentials (via aws configure)
+- Installation of SAM (Serverless Application Model) V1.15.0
 
 
 
